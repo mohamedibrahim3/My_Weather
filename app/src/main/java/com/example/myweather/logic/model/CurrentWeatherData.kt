@@ -1,20 +1,17 @@
 package com.example.myweather.logic.model
 
-import kotlinx.datetime.LocalDateTime
-
-
 data class CurrentWeatherData(
-    val cityName: String,
-    val currentTemperature: Double,
-    val minTemperature: Double,
-    val maxTemperature: Double,
-    val humidity: Double,
-    val windSpeed: Double,
-    val rainPercentage: Double,
-    val pressure: Double,
-    val uvIndex: Double,
+    val apparentTemperature: Double,
+    val isDay: Int,
     val precipitationProbability: Int,
-    val feelsLike: Double,
-    val dateTime: LocalDateTime,
-    val weatherType: WeatherType
-)
+    val relativeHumidity2m: Int,
+    val surfacePressure: Double,
+    val temperature2m: Double,
+    val uvIndex: Double,
+    val weatherCode: Int,
+    val windSpeed10m: Double,
+    val cloudCover: Double
+) {
+    val isDayTime: Boolean
+        get() = isDay == 1
+}

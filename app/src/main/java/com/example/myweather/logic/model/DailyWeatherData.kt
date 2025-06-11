@@ -1,11 +1,8 @@
 package com.example.myweather.logic.model
 
-import kotlinx.datetime.LocalDate
-
-
 data class DailyWeatherData(
-    val date: LocalDate,
-    val maxTemp: Double,
-    val minTemp: Double,
-    val weatherType: WeatherType
+    val temperature2mMax: List<Double>,
+    val temperature2mMin: List<Double>,
+    val time: List<String>,
+    val weatherCode: List<Int>
 )
