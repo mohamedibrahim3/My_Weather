@@ -1,17 +1,15 @@
 package com.example.myweather.logic.usecases
 
+import com.example.myweather.common.DataState
 import com.example.myweather.logic.model.Weather
-import com.example.myweather.logic.repository.LocationRepository
 import com.example.myweather.logic.repository.WeatherRepository
+import kotlinx.coroutines.flow.Flow
 
 class GetWeatherByCoordinateUseCase (
-    private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository
 ) {
-    suspend fun getWeatherByCoordinate(): Weather {
-        val location = locationRepository.getCurrentLocation()
-        val weather = weatherRepository.getWeatherByCoordinate(location)
-        return weather
+    suspend operator fun invoke(lat: Double, long: Double): Flow<DataState<Weather>> {
+        return weatherRepository.getWeatherByCoordinate(lat, long)
     }
 
 }
