@@ -1,123 +1,85 @@
 package com.example.myweather.data.weather.mapper
 
+import com.example.myweather.data.weather.model.CurrentDto
+import com.example.myweather.data.weather.model.CurrentUnitsDto
+import com.example.myweather.data.weather.model.DailyDto
+import com.example.myweather.data.weather.model.DailyUnitsDto
+import com.example.myweather.data.weather.model.HourlyDto
+import com.example.myweather.data.weather.model.HourlyUnitsDto
 import com.example.myweather.data.weather.model.WeatherDto
-import com.example.myweather.logic.exception.InvalidCityNameException
-import com.example.myweather.logic.exception.InvalidDataFoundException
-import com.example.myweather.logic.exception.NoWeatherFoundException
+import com.example.myweather.logic.model.CurrentUnits
 import com.example.myweather.logic.model.CurrentWeatherData
+import com.example.myweather.logic.model.DailyUnits
 import com.example.myweather.logic.model.DailyWeatherData
+import com.example.myweather.logic.model.HourlyUnits
 import com.example.myweather.logic.model.HourlyWeatherData
 import com.example.myweather.logic.model.Weather
-import com.example.myweather.logic.model.WeatherType
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 
-class WeatherMapper {
+fun WeatherDto.toWeather(): Weather {
+    return Weather(
+        current = currentDto?.toCurrent() ?: throw IllegalArgumentException("Current data is missing"),
+        currentUnits = currentUnitsDto?.toCurrentUnits() ?: throw IllegalArgumentException("Current units data is missing"),
+        daily = dailyDto?.toDaily() ?: throw IllegalArgumentException("Daily data is missing"),
+        dailyUnits = dailyUnitsDto?.toDailyUnits() ?: throw IllegalArgumentException("Daily units data is missing"),
+        hourly = hourlyDto?.toHourly() ?: throw IllegalArgumentException("Hourly data is missing"),
+        hourlyUnits = hourlyUnitsDto?.toHourlyUnits() ?: throw IllegalArgumentException("Hourly units data is missing"),
+        cityName = "Unknown City"
+    )
+}
 
-    fun mapWeatherDtoToWeatherEntity(weatherDto: WeatherDto): Weather {
-        val currentWeather = weatherDto.currentWeather ?: throw NoWeatherFoundException()
-        val hourlyWeather = weatherDto.hourlyWeather ?: throw NoWeatherFoundException()
-        val dailyWeather = weatherDto.dailyWeather ?: throw NoWeatherFoundException()
-        val cityName = weatherDto.timezone?.split("/")?.lastOrNull() ?: throw InvalidCityNameException()
-        val currentTemperature = currentWeather.temperature2m ?: throw NoWeatherFoundException()
-        val weatherCode = currentWeather.weatherCode ?: throw NoWeatherFoundException()
-        val humidity = currentWeather.humidity ?: throw NoWeatherFoundException()
-        val windSpeed = currentWeather.windSpeed ?: throw NoWeatherFoundException()
-        val precipitation = currentWeather.precipitation ?: throw NoWeatherFoundException()
-        val pressure = currentWeather.pressure ?: throw NoWeatherFoundException()
-        val uvIndex = currentWeather.uvIndex ?: throw NoWeatherFoundException()
-        val feelsLike =
-            currentWeather.apparentTemperature?.toDouble() ?: throw NoWeatherFoundException()
-        val time = currentWeather.time ?: throw NoWeatherFoundException()
-        val dateTime = parseDateTime(time)
-        val hourlyTemperatures = hourlyWeather.temperature2m ?: throw NoWeatherFoundException()
-        val hourlyTimes = hourlyWeather.time ?: throw NoWeatherFoundException()
-        val hourlyWeatherCodes = hourlyWeather.weatherCode ?: throw NoWeatherFoundException()
-        val todayHourly =
-            hourlyTemperatures.zip(hourlyTimes.zip(hourlyWeatherCodes)) { temp, pair ->
-                val (timeStr, code) = pair
-                HourlyWeatherData(
-                    dateTime = parseDateTime(timeStr),
-                    temperature = temp,
-                    weatherType = mapWeatherCode(code)
-                )
-            }.filter { it.dateTime.date == dateTime.date }
-        val dailyMaxTemps = dailyWeather.temperature2mMax ?: throw NoWeatherFoundException()
-        val dailyMinTemps = dailyWeather.temperature2mMin ?: throw NoWeatherFoundException()
-        val dailyTimes = dailyWeather.time ?: throw NoWeatherFoundException()
-        val dailyWeatherCodes = dailyWeather.weatherCode ?: throw NoWeatherFoundException()
-        val weekForecast =
-            dailyMaxTemps.zip(dailyMinTemps.zip(dailyTimes.zip(dailyWeatherCodes))) { maxTemp, pair ->
-                val (minTemp, timeAndCode) = pair
-                val (timeStr, code) = timeAndCode
-                DailyWeatherData(
-                    date = LocalDate.parse(timeStr),
-                    maxTemp = maxTemp,
-                    minTemp = minTemp,
-                    weatherType = mapWeatherCode(code)
-                )
-            }
-        val currentWeatherData = CurrentWeatherData(
-            cityName = cityName,
-            currentTemperature = currentTemperature,
-            minTemperature = dailyMinTemps.firstOrNull() ?: throw NoWeatherFoundException(),
-            maxTemperature = dailyMaxTemps.firstOrNull() ?: throw NoWeatherFoundException(),
-            humidity = humidity,
-            windSpeed = windSpeed,
-            rainPercentage = precipitation * 100,
-            pressure = pressure,
-            uvIndex = uvIndex,
-            precipitationProbability = (precipitation * 100).toInt(),
-            feelsLike = feelsLike,
-            dateTime = dateTime,
-            weatherType = mapWeatherCode(weatherCode)
-        )
-        return Weather(
-            currentWeather = currentWeatherData,
-            todayHourly = todayHourly,
-            weekForecast = weekForecast
-        )
-    }
+fun CurrentDto.toCurrent(): CurrentWeatherData {
+    return CurrentWeatherData(
+        apparentTemperature = apparentTemperature ?: 0.0,
+        isDay = isDay ?: 0,
+        precipitationProbability = precipitationProbability ?: 0,
+        relativeHumidity2m = relativeHumidity2m ?: 0,
+        surfacePressure = surfacePressure ?: 0.0,
+        temperature2m = temperature2m ?: 0.0,
+        uvIndex = uvIndex ?: 0.0,
+        weatherCode = weatherCode ?: 0,
+        windSpeed10m = windSpeed10m ?: 0.0,
+        cloudCover = cloudCover ?: 0.0
+    )
+}
 
-    private fun parseDateTime(time: String): LocalDateTime {
-        return try {
-            LocalDateTime.parse(time)
-        } catch (_: Exception) {
-            throw InvalidDataFoundException()
-        }
-    }
+fun CurrentUnitsDto.toCurrentUnits(): CurrentUnits {
+    return CurrentUnits(
+        apparentTemperature = apparentTemperature ?: "",
+        precipitationProbability = precipitationProbability ?: "",
+        relativeHumidity2m = relativeHumidity2m ?: "",
+        surfacePressure = surfacePressure ?: "",
+        temperature2m = temperature2m ?: "",
+        windSpeed10m = windSpeed10m ?: "",
+        cloudCover = cloudCover ?: ""
+    )
+}
 
-    private fun mapWeatherCode(weatherCode: Int): WeatherType {
-        return when (weatherCode) {
-            0 -> WeatherType.CLEAR_SKY
-            1 -> WeatherType.MAINLY_CLEAR
-            2 -> WeatherType.PARTLY_CLOUDY
-            3 -> WeatherType.OVERCAST
-            45 -> WeatherType.FOG
-            48 -> WeatherType.DEPOSITING_RIME_FOG
-            51 -> WeatherType.DRIZZLE_LIGHT
-            53 -> WeatherType.DRIZZLE_MODERATE
-            55 -> WeatherType.DRIZZLE_HIGH
-            56 -> WeatherType.FREEZING_DRIZZLE_LIGHT
-            57 -> WeatherType.FREEZING_DRIZZLE_HEIGHT
-            61 -> WeatherType.RAIN_LIGHT
-            63 -> WeatherType.RAIN_MODERATE
-            65 -> WeatherType.RAIN_HEAVY
-            66 -> WeatherType.FREEZING_RAIN_LIGHT
-            67 -> WeatherType.FREEZING_RAIN_HIGH
-            71 -> WeatherType.SNOW_LIGHT
-            73 -> WeatherType.SNOW_MODERATE
-            75 -> WeatherType.SNOW_HEAVY
-            77 -> WeatherType.SNOW_GRAINS
-            80 -> WeatherType.RAIN_SHOWER_LIGHT
-            81 -> WeatherType.RAIN_SHOWER_MODRATE
-            82 -> WeatherType.RAIN_SHOWER_HEAVY
-            85 -> WeatherType.SNOW_SHOWER_LIGHT
-            86 -> WeatherType.SNOW_SHOWER_HEAVY
-            95 -> WeatherType.THUNDER_STORM
-            96 -> WeatherType.THUNDER_STORM_HAIL_LIGHT
-            99 -> WeatherType.THUNDER_STORM_HAIL_HEAVY
-            else -> WeatherType.UNKNOWN_WEATHER_FORECAST
-        }
-    }
+fun DailyDto.toDaily(): DailyWeatherData {
+    return DailyWeatherData(
+        temperature2mMax = temperature2mMax?.filterNotNull() ?: emptyList(),
+        temperature2mMin = temperature2mMin?.filterNotNull() ?: emptyList(),
+        time = time?.filterNotNull() ?: emptyList(),
+        weatherCode = weatherCode?.filterNotNull() ?: emptyList()
+    )
+}
+
+fun DailyUnitsDto.toDailyUnits(): DailyUnits {
+    return DailyUnits(
+        temperature2mMax = temperature2mMax ?: "",
+        temperature2mMin = temperature2mMin ?: ""
+    )
+}
+
+fun HourlyDto.toHourly(): HourlyWeatherData {
+    return HourlyWeatherData(
+        temperature2m = temperature2m?.filterNotNull() ?: emptyList(),
+        time = time?.filterNotNull() ?: emptyList(),
+        weatherCode = weatherCode?.filterNotNull() ?: emptyList()
+    )
+}
+
+fun HourlyUnitsDto.toHourlyUnits(): HourlyUnits {
+    return HourlyUnits(
+        temperature2m = temperature2m ?: ""
+    )
 }
