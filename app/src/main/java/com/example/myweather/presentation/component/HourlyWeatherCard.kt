@@ -36,7 +36,7 @@ fun HourlyWeatherCard(
     time: String,
     temperature: String,
     @DrawableRes icon: Int,
-    isDay: Boolean = true
+    isDay: Boolean
 ){
     Box(
         modifier = modifier

@@ -25,7 +25,7 @@ fun DayWeatherItems(
     minTemperatures: List<String>,
     maxTemperatures: List<String>,
     weatherCodes: List<Int>,
-    isDay: Boolean = true
+    isDay: Boolean
 ) {
     Column(){
         Text(

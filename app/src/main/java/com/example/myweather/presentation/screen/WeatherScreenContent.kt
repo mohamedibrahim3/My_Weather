@@ -277,7 +277,8 @@ fun WeatherScreenContent(
                 maxTemperatures = daily.temperature2mMax.map {
                     it.roundToInt().toString() + dailyUnits.temperature2mMax
                 },
-                weatherCodes = daily.weatherCode
+                weatherCodes = daily.weatherCode,
+                isDay = isDay
             )
         }
     }

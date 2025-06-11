@@ -24,7 +24,8 @@ fun TodayWeatherHourItems(
                 HourlyWeatherCard(
                     time = timeList[it].substring(11, 16),
                     temperature = temperatureList[it],
-                    icon = getWeatherIcon(isDay = isDay, code = code[it])
+                    icon = getWeatherIcon(isDay = isDay, code = code[it]),
+                    isDay = isDay,
                 )
             }
         }
